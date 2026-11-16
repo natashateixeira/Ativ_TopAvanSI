@@ -1,6 +1,6 @@
 {
   "kind": "REA gate report",
-  "date_utc": "2026-11-16T13:37:20.631575+00:00",
+  "date_utc": "2026-11-16T14:07:53.984136+00:00",
   "checks": [
     {
       "command": "/Users/natashatx/Downloads/ARQUIVOS PARA EXERCICIO/rea-motopecas-antigravity/.venv/bin/python -m compileall -q app",
@@ -1848,7 +1848,7 @@
     ".venv-1/lib/python3.14/site-packages/uvicorn-0.54.0.dist-info/licenses/LICENSE.md": "efe1acf3e62fb99c288b0ec73e5a773b7268ef4320fe757ea994214e4b63c371",
     "AGENTS.md": "e555045aea967b890fb9270de56cf5142bb54b4d46d301e67530640f4a937321",
     "Arquitetura REA para Loja de Motopeças.png": "aaf2d07c5cc4ab91695d50f0999ab1b0fb48a1ba2948386d60fd0af31b9a8604",
-    "README.md": "b2bb94e02ddcfc29d02e863960da14aea2a0d8c946bfb426c0a0b62ba3f1d8b8",
+    "README.md": "95ea3fb0a507f0836fe7a61369dd03f00a441a056b1d43909b836f9ca393fe6c",
     "REA_WORKFLOW.md": "d67dd282953f5917fc47bdba5b70f8dcc2a7d9057a4b2a5c305850f9c5c72776",
     "app/__init__.py": "5780155d51133713d50c1f7aaa67efd3056a3dbc27b65692c61ad2fbc9caea71",
     "app/catalog.py": "c0cf61960c65fdf0025c70513bf1423c4c1f5063c31823b4fed00680de4efea0",

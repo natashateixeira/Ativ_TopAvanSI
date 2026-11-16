@@ -178,34 +178,34 @@ Se o repositório **já existir**, não execute `gh repo create`: configure `git
 
 As capturas usam dados de API simulados no Chromium; os testes transacionais do servidor foram conduzidos separadamente. Veja [proveniência das capturas](docs/evidence/preview-notes.md). Para reproduzir, instale Playwright e um Chromium compatível no seu ambiente.
 
-## Entrega Exercício 1 — Integração C (Chatbot Consultivo RF-04)
+## Entrega Exercício 1 — Integração C (Assistente de Atendimento e Peças RF-04)
 
 ### 1. Modalidade Executada e Justificativa
 
 Foi executada a **Modalidade C (Integração A + B)**, associando uma evidência instrumentada obtida via inspeção da API/interface (etapa B) ao ciclo de engenharia com TDD (`RED → GREEN`) e gates de regressão (etapa A).
 
-- **Valor adicional da integração:** A observação instrumentada evitou suposições ao comprovar uma limitação real de busca em linguagem natural; o fluxo TDD garantiu que a implementação fosse verificável e não quebrasse os contratos existentes da loja.
+- **Valor adicional da integração:** A observação instrumentada comprovou que a busca tradicional do site não atende perguntas em linguagem natural nem dúvidas de atendimento pós-venda; o fluxo TDD garantiu que a implementação do chatbot fosse verificável e não quebrasse os contratos existentes da loja.
 
 ### 2. Evidência Instrumentada (Etapa B)
 
 - **Evidence-ID:** `EV-01`
 - **Alvo e Ambiente:** `http://127.0.0.1:8000` (Python 3.14, FastAPI 1.0.0, SQLite local).
 - **Comando Executado:** `curl -i "http://127.0.0.1:8000/api/products?q=pastilha%20de%20freio%20para%20CG%20160"`
-- **Fato Observado:** A API retornou `HTTP 200 OK` com corpo `[]` (lista vazia), embora existam pastilhas de freio e a moto CG 160 no catálogo.
-- **Hipótese:** O filtro `q` realiza apenas busca literal (`LIKE %q%`) nos atributos do produto e não cruza a pergunta com a tabela `compatibility`.
-- **Decisão Humana:** Aprovada a criação do **RF-04 (Chatbot Consultivo de Peças)** via endpoint `POST /api/chat` e widget web.
+- **Fato Observado:** A API retornou `HTTP 200 OK` com corpo `[]` (lista vazia), pois o filtro `q` realiza apenas busca literal por substring nos atributos do produto e a plataforma não dispõe de canal para dúvidas de pós-venda (reembolso, trocas/problemas com pedidos e contato).
+- **Hipótese:** A criação de um endpoint conversacional dedicado (`POST /api/chat`) permite classificar intenções de suporte ao cliente (reembolso, problemas com pedidos, contato humano) e apoiar consultas de compatibilidade em linguagem natural.
+- **Decisão Humana:** Aprovada a implementação do **RF-04 (Assistente de Atendimento e Peças)** via endpoint `POST /api/chat` e widget web integrado à loja.
 
 ### 3. Rastreabilidade (`EV-ID → Requisito → Teste → Commit → Gate`)
 
-- `EV-01` → **RF-04** (`POST /api/chat` + Widget Web) → `tests/test_chatbot.py` → Branch `entrega/chatbot` → **Gate:** `python -m pytest -v` (`17 passed`).
+- `EV-01` → **RF-04** (`POST /api/chat` + Widget Web de Suporte e Catálogo) → `tests/test_chatbot.py` (6 testes automatizados) → Branch `entrega/chatbot` → **Gate:** `python -m pytest -v` (`22 passed`) e `python scripts/gate.py` (`GATE PASS`).
 
 ### 4. Segurança e Limites Conhecidos
 
-- **Segurança:** Validação estrita de entrada com Pydantic (`extra="forbid"`, limite de 250 caracteres), queries SQL parametrizadas contra SQL Injection e conformidade total com a `Content-Security-Policy` (`script-src 'self'`, sem scripts inline). Nenhum dado pessoal é coletado ou armazenado (LGPD).
-- **Limites:** O assistente opera de forma _stateless_ (sem memória de histórico de conversa) e utiliza correspondência lexical determinística sobre o catálogo local, não substituindo catálogos técnicos oficiais de fabricantes para aplicação real.
+- **Segurança:** Validação estrita de entrada com Pydantic (`extra="forbid"`, `str_strip_whitespace=True`, limite de 250 caracteres), queries SQL parametrizadas contra SQL Injection e conformidade total com a `Content-Security-Policy` (`script-src 'self'`, sem scripts inline). Nenhum dado pessoal é coletado ou armazenado (LGPD).
+- **Limites:** O assistente opera de forma _stateless_ (sem memória de histórico entre turnos), fornece canais de atendimento fictícios para fins acadêmicos e utiliza correspondência lexical determinística sobre catálogo simulado, não substituindo canais oficiais ou catálogos técnicos de fabricantes.
 
 ### 5. Revisão Independente e Aprovação
 
-- **Autoria da Implementação:** [Natasha Teixeira]
-- **Revisor Independente:** [Guilherme Henrique]
-- **Parecer:** Código revisado na branch `entrega/chatbot`, sem segredos ou arquivos sensíveis expostos, com 100% dos testes passando (`17 passed`). Status: **APROVADO**.
+- **Autoria da Implementação:** Natasha Teixeira
+- **Revisor Independente:** Guilherme Henrique
+- **Parecer:** Código revisado na branch `entrega/chatbot` (`git diff`, `.gitignore` e execução dos gates), sem segredos ou arquivos sensíveis expostos, com 100% dos testes passando (`22 passed`). Status: **APROVADO**.
