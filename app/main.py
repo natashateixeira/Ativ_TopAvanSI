@@ -21,10 +21,12 @@ BASE = Path(__file__).resolve().parent.parent
 STATIC = BASE / "static"
 BIKE_IDS = {b["id"]: b for b in BIKES}
 
+
 class Item(BaseModel):
     model_config = ConfigDict(extra="forbid")
     product_id: int = Field(ge=1)
     quantity: int = Field(ge=1, le=10)
+
 
 class OrderRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -36,11 +38,13 @@ class OrderRequest(BaseModel):
         if len(ids) != len(set(ids)):
             raise ValueError("Um produto não pode aparecer duas vezes")
         return self
-    
+
+
 class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     message: str = Field(..., min_length=1, max_length=250)
-    
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     initialize()
@@ -177,6 +181,46 @@ def make_app() -> FastAPI:
     def chat_assistant(payload: ChatRequest):
         text = payload.message.strip().lower()
 
+        # 1. Reembolso, estorno ou cancelamento
+        if any(p in text for p in ["reembolso", "estorno", "devolver", "devolucao", "devolução", "cancelar", "cancela"]):
+            return {
+                "category": "reembolso",
+                "reply": (
+                    "Como a Rota 2 Motopeças é um protótipo acadêmico de pedidos simulados, "
+                    "nenhuma cobrança real é efetuada e não há necessidade de estorno financeiro. "
+                    "Para cancelar ou refazer um pedido simulado, informe o código DEMO do pedido "
+                    "ou escreva para suporte@rota2motopecas.example."
+                ),
+                "products": [],
+            }
+
+        # 2. Problemas com pedido, entrega, troca ou garantia
+        if any(p in text for p in ["problema", "defeito", "errada", "errado", "quebrado", "atraso", "entrega", "pedido", "garantia", "troca"]):
+            return {
+                "category": "suporte_pedido",
+                "reply": (
+                    "Sentimos muito pelo inconveniente! Para problemas com pedido simulado, "
+                    "troca ou garantia (prazo demonstrativo de 7 dias), tenha em mãos o código DEMO "
+                    "do pedido e o SKU da peça. Nossa equipe analisa cada caso pelo canal "
+                    "suporte@rota2motopecas.example."
+                ),
+                "products": [],
+            }
+
+        # 3. Contato humano / canais de atendimento
+        if any(p in text for p in ["contato", "atendente", "humano", "telefone", "whatsapp", "email", "e-mail", "falar", "ajuda", "suporte"]):
+            return {
+                "category": "contato",
+                "reply": (
+                    "Canais de Atendimento Rota 2 Motopeças (Simulado):\n"
+                    "• E-mail: suporte@rota2motopecas.example\n"
+                    "• WhatsApp/Telefone: (81) 90000-0000\n"
+                    "• Horário: Segunda a Sexta, das 8h às 18h."
+                ),
+                "products": [],
+            }
+
+        # 4. Consulta ao catálogo e compatibilidade (mantida como apoio)
         matched_bike = None
         for b in BIKES:
             if b["id"].lower() in text or b["name"].lower() in text:
@@ -202,22 +246,29 @@ def make_app() -> FastAPI:
                 args.extend([esc, esc, esc])
             sql += " AND (" + " OR ".join(like_clauses) + ")"
 
-        sql += " ORDER BY p.stock DESC, p.price_cents ASC LIMIT 5"
+        if matched_bike or keywords:
+            sql += " ORDER BY p.stock DESC, p.price_cents ASC LIMIT 5"
+            with connect() as db:
+                rows = [serialize_product(r, db) for r in db.execute(sql, args).fetchall()]
+        else:
+            rows = []
 
-        with connect() as db:
-            rows = [serialize_product(r, db) for r in db.execute(sql, args).fetchall()]
-
-        if not rows:
+        if rows:
+            resumo = ", ".join(f"{r['name']} (R$ {r['price_cents']/100:.2f}, {r['stock']} un.)" for r in rows[:3])
+            alvo = f" para {matched_bike['name']}" if matched_bike else ""
             return {
-                "reply": "Não encontrei peças disponíveis com essa descrição. Tente informar o nome da peça e o modelo da moto.",
-                "products": []
+                "category": "catalogo",
+                "reply": f"Encontrei {len(rows)} opção(ões){alvo}: {resumo}. Precisa de ajuda com pedido, reembolso ou contato?",
+                "products": rows,
             }
 
-        resumo = ", ".join(f"{r['name']} (R$ {r['price_cents']/100:.2f} - {r['stock']} un.)" for r in rows[:3])
-        alvo = f" para {matched_bike['name']}" if matched_bike else ""
         return {
-            "reply": f"Encontrei {len(rows)} opção(ões){alvo}: {resumo}.",
-            "products": rows
+            "category": "geral",
+            "reply": (
+                "Olá! Posso ajudar com reembolso/cancelamento, problemas com pedidos, "
+                "contato com atendente ou compatibilidade de peças. Como posso auxiliar?"
+            ),
+            "products": [],
         }
 
     @app.get("/", include_in_schema=False)
@@ -226,5 +277,6 @@ def make_app() -> FastAPI:
 
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
     return app
+
 
 app = make_app()

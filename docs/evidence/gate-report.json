@@ -1,6 +1,6 @@
 {
   "kind": "REA gate report",
-  "date_utc": "2026-11-16T13:14:50.397705+00:00",
+  "date_utc": "2026-11-16T13:37:20.631575+00:00",
   "checks": [
     {
       "command": "/Users/natashatx/Downloads/ARQUIVOS PARA EXERCICIO/rea-motopecas-antigravity/.venv/bin/python -m compileall -q app",
@@ -11,7 +11,7 @@
     {
       "command": "/Users/natashatx/Downloads/ARQUIVOS PARA EXERCICIO/rea-motopecas-antigravity/.venv/bin/python -m pytest -q tests",
       "exit_code": 0,
-      "stdout": "....................                                                     [100%]\n=============================== warnings summary ===============================\n.venv/lib/python3.14/site-packages/fastapi/testclient.py:1\n  /Users/natashatx/Downloads/ARQUIVOS PARA EXERCICIO/rea-motopecas-antigravity/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n",
+      "stdout": "......................                                                   [100%]\n=============================== warnings summary ===============================\n.venv/lib/python3.14/site-packages/fastapi/testclient.py:1\n  /Users/natashatx/Downloads/ARQUIVOS PARA EXERCICIO/rea-motopecas-antigravity/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n",
       "stderr": ""
     }
   ],
@@ -1853,7 +1853,7 @@
     "app/__init__.py": "5780155d51133713d50c1f7aaa67efd3056a3dbc27b65692c61ad2fbc9caea71",
     "app/catalog.py": "c0cf61960c65fdf0025c70513bf1423c4c1f5063c31823b4fed00680de4efea0",
     "app/db.py": "761495787ffc7ac3f004c8a8335b9c551bc7478581fe67aaa169815387cdfa6f",
-    "app/main.py": "b38300bb631c010539d97883fbb9b3ff6e5f45db59622d5c1fd601f22dc6495f",
+    "app/main.py": "dc88d093a55be922c91583981ed201c475f5bd66102ec21e351c98cc13a6e6bf",
     "app/manage.py": "d1087e37b4dfe761c48b63cd666017767bd14001ba33587e30b3ffe82345fe92",
     "architecture.mmd": "7f379f26b183c57f7641e551a85254afd7cff4fc39eabd72e43d171527448053",
     "arquitetura ASF.png": "27c7382298c5915705ffee564b336b2536d3ba0490f77771f425985159cf6cee",
@@ -1883,11 +1883,11 @@
     "static/img/suspensao.svg": "bd73e3b0921d0b483f8eb2a9b91f7c1c6c530d36c5febf14baab089084f38d9c",
     "static/img/transmissao.svg": "4abbb0e385ab4235abd52da96f1617a332a9fb7c0a440dd2763e736588bcfde0",
     "static/img/vela.svg": "ebb6ccef7e493b8665241b95f7ed4f150feda115a4a73bdfc38938bef949dedd",
-    "static/index.html": "b96602059200a0a0cd3a65fa77bd48a81d36c23af07324e0160a5fe3aaf0b557",
-    "static/styles.css": "00a56c412a3537d18d9465f3b018597b63991b20d73649200d5e08b2ff057ee4",
+    "static/index.html": "a992eb8fb615cec27d60f518f253478f49fe48604852a6ee4e31a73e73084284",
+    "static/styles.css": "338437979d0a1c7c3f70216cbb80ced5e29e0c0745358bad7dfa049ab0267948",
     "tests/conftest.py": "7aada3248fec6ffe0a804f88c74e8016c41fb2c420e6793f1bb06d0d10dc17a4",
     "tests/test_api.py": "d73401d351d4d4044b0749510f1433c3f1f00fce5b3c479cb6ed7036b5543310",
-    "tests/test_chatbot.py": "debbac56d0b0c3939af53bd49a30b582b3f1c47fca54462258d5cde197df45af",
+    "tests/test_chatbot.py": "fab5c8f32983ee331c958c833fb8856915d90d9059f558973990fb741b380e25",
     "tests/test_cli.py": "1d032d0ad484224dfff3f09f66b61a9e1b2cfe04f637d5b63d878319b1b278f5",
     "traceability.csv": "fcc8e565c0aa7c37d7578fbd30b87e9a39b438c50450cce7de3748ee24c5c920"
   },

@@ -1147,6 +1147,7 @@ footer {
   line-height: 1.4;
   max-width: 85%;
   color: #18181b;
+  white-space: pre-line;
 }
 
 .chat-msg.bot {
