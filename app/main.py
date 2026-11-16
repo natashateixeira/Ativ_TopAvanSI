@@ -38,9 +38,9 @@ class OrderRequest(BaseModel):
         return self
     
 class ChatRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    message: str = Field(min_length=2, max_length=250)
-
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    message: str = Field(..., min_length=1, max_length=250)
+    
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     initialize()
