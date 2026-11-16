@@ -6,7 +6,7 @@
 
 ## 1. Problema de engenharia
 
-Demonstrar, de ponta a ponta, uma instância reprodutível de **REA (Reverse Engineer Anything, como metodologia didática)** para reconstrução *funcional* de uma loja virtual simples de peças de motocicletas usando **agentes de IA, LLM, ferramentas locais e gates executáveis**. Não se trata de engenharia reversa do código proprietário da loja nem de clonagem visual pixel-a-pixel.
+Demonstrar, de ponta a ponta, uma instância reprodutível de **REA (Reverse Engineer Anything, como metodologia didática)** para reconstrução _funcional_ de uma loja virtual simples de peças de motocicletas usando **agentes de IA, LLM, ferramentas locais e gates executáveis**. Não se trata de engenharia reversa do código proprietário da loja nem de clonagem visual pixel-a-pixel.
 
 - **Referência observada em 03/11/2026:** [Regimotos — Loja](https://regimotos.com.br/loja/). Na página pública, foram identificados grupos de produtos, faixa de preço, itens com preço e opção de adicionar ao carrinho. Evidências e limites em [`docs/discovery.md`](docs/discovery.md).
 - **Marca nova:** Rota 2 Motopeças (fictícia).
@@ -18,18 +18,18 @@ Demonstrar, de ponta a ponta, uma instância reprodutível de **REA (Reverse Eng
 
 ## 2. Requisitos implementados
 
-| ID | Função | Evidência |
-|----|--------|-----------|
-| RF-01 | Listar catálogo e categorias | `GET /api/products`, `GET /api/categories` |
-| RF-02 | Busca por termo e SKU | `GET /api/products?q=...` |
-| RF-03 | Filtrar por categoria | `GET /api/products?category=...` |
-| RF-04 | Filtrar compatibilidade por modelo/ano | `GET /api/products?bike=...&year=...` |
-| RF-05 | Carrinho com quantidades e subtotal | `static/app.js` |
-| RF-06 | Criar pedido **simulado** | `POST /api/orders` |
-| RF-07 | Controle transacional de estoque | `app/main.py` (`BEGIN IMMEDIATE`) |
+| ID    | Função                                    | Evidência                                       |
+| ----- | ----------------------------------------- | ----------------------------------------------- |
+| RF-01 | Listar catálogo e categorias              | `GET /api/products`, `GET /api/categories`      |
+| RF-02 | Busca por termo e SKU                     | `GET /api/products?q=...`                       |
+| RF-03 | Filtrar por categoria                     | `GET /api/products?category=...`                |
+| RF-04 | Filtrar compatibilidade por modelo/ano    | `GET /api/products?bike=...&year=...`           |
+| RF-05 | Carrinho com quantidades e subtotal       | `static/app.js`                                 |
+| RF-06 | Criar pedido **simulado**                 | `POST /api/orders`                              |
+| RF-07 | Controle transacional de estoque          | `app/main.py` (`BEGIN IMMEDIATE`)               |
 | RF-08 | Evitar processamento duplo (idempotência) | cabeçalho `Idempotency-Key`, teste automatizado |
-| RF-09 | Consultar indicadores sem dados pessoais | `GET /api/metrics` |
-| RF-10 | Gestão de estoque local | `python -m app.manage stock <SKU> <QTD>` |
+| RF-09 | Consultar indicadores sem dados pessoais  | `GET /api/metrics`                              |
+| RF-10 | Gestão de estoque local                   | `python -m app.manage stock <SKU> <QTD>`        |
 
 **Limites do domínio:** compatibilidades e aplicações dos produtos são hipotéticas; valores, imagens e marcas reais não devem ser inferidos a partir do protótipo. A UI não exibe frete, impostos, parcelamento ou disponibilidade de entrega, pois não há checkout comercial.
 
@@ -181,10 +181,13 @@ As capturas usam dados de API simulados no Chromium; os testes transacionais do 
 ## Entrega Exercício 1 — Integração C (Chatbot Consultivo RF-04)
 
 ### 1. Modalidade Executada e Justificativa
+
 Foi executada a **Modalidade C (Integração A + B)**, associando uma evidência instrumentada obtida via inspeção da API/interface (etapa B) ao ciclo de engenharia com TDD (`RED → GREEN`) e gates de regressão (etapa A).
+
 - **Valor adicional da integração:** A observação instrumentada evitou suposições ao comprovar uma limitação real de busca em linguagem natural; o fluxo TDD garantiu que a implementação fosse verificável e não quebrasse os contratos existentes da loja.
 
 ### 2. Evidência Instrumentada (Etapa B)
+
 - **Evidence-ID:** `EV-01`
 - **Alvo e Ambiente:** `http://127.0.0.1:8000` (Python 3.14, FastAPI 1.0.0, SQLite local).
 - **Comando Executado:** `curl -i "http://127.0.0.1:8000/api/products?q=pastilha%20de%20freio%20para%20CG%20160"`
@@ -193,13 +196,16 @@ Foi executada a **Modalidade C (Integração A + B)**, associando uma evidência
 - **Decisão Humana:** Aprovada a criação do **RF-04 (Chatbot Consultivo de Peças)** via endpoint `POST /api/chat` e widget web.
 
 ### 3. Rastreabilidade (`EV-ID → Requisito → Teste → Commit → Gate`)
+
 - `EV-01` → **RF-04** (`POST /api/chat` + Widget Web) → `tests/test_chatbot.py` → Branch `entrega/chatbot` → **Gate:** `python -m pytest -v` (`17 passed`).
 
 ### 4. Segurança e Limites Conhecidos
+
 - **Segurança:** Validação estrita de entrada com Pydantic (`extra="forbid"`, limite de 250 caracteres), queries SQL parametrizadas contra SQL Injection e conformidade total com a `Content-Security-Policy` (`script-src 'self'`, sem scripts inline). Nenhum dado pessoal é coletado ou armazenado (LGPD).
-- **Limites:** O assistente opera de forma *stateless* (sem memória de histórico de conversa) e utiliza correspondência lexical determinística sobre o catálogo local, não substituindo catálogos técnicos oficiais de fabricantes para aplicação real.
+- **Limites:** O assistente opera de forma _stateless_ (sem memória de histórico de conversa) e utiliza correspondência lexical determinística sobre o catálogo local, não substituindo catálogos técnicos oficiais de fabricantes para aplicação real.
 
 ### 5. Revisão Independente e Aprovação
+
 - **Autoria da Implementação:** [Natasha Teixeira]
 - **Revisor Independente:** [Guilherme Henrique]
 - **Parecer:** Código revisado na branch `entrega/chatbot`, sem segredos ou arquivos sensíveis expostos, com 100% dos testes passando (`17 passed`). Status: **APROVADO**.
