@@ -4,6 +4,7 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 import hashlib
 import json
+import re
 from pathlib import Path
 import secrets
 import sqlite3
@@ -35,6 +36,10 @@ class OrderRequest(BaseModel):
         if len(ids) != len(set(ids)):
             raise ValueError("Um produto não pode aparecer duas vezes")
         return self
+    
+class ChatRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    message: str = Field(min_length=2, max_length=250)
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -167,6 +172,53 @@ def make_app() -> FastAPI:
             p = db.execute("SELECT COUNT(*), COALESCE(SUM(stock),0) FROM products").fetchone()
             o = db.execute("SELECT COUNT(*), COALESCE(SUM(total_cents),0) FROM orders").fetchone()
             return {"products": p[0], "units_in_stock": p[1], "demo_orders": o[0], "demo_total_cents": o[1]}
+
+    @app.post("/api/chat")
+    def chat_assistant(payload: ChatRequest):
+        text = payload.message.strip().lower()
+
+        matched_bike = None
+        for b in BIKES:
+            if b["id"].lower() in text or b["name"].lower() in text:
+                matched_bike = b
+                break
+
+        stopwords = {"tem", "para", "pra", "qual", "quais", "quero", "preciso", "serve", "na", "no", "de", "da", "do", "um", "uma", "o", "a"}
+        tokens = [re.sub(r"[^\wáéíóúâêôãõç]", "", w) for w in text.split()]
+        keywords = [t for t in tokens if len(t) >= 3 and t not in stopwords and (not matched_bike or t not in matched_bike["id"].lower())]
+
+        sql = "SELECT DISTINCT p.* FROM products p WHERE 1=1"
+        args: list = []
+
+        if matched_bike:
+            sql += " AND EXISTS(SELECT 1 FROM compatibility c WHERE c.product_id=p.id AND c.bike_id=?)"
+            args.append(matched_bike["id"])
+
+        if keywords:
+            like_clauses = []
+            for kw in keywords[:3]:
+                esc = "%" + kw.replace("%", "\\%").replace("_", "\\_") + "%"
+                like_clauses.append("(LOWER(p.name) LIKE ? ESCAPE '\\' OR LOWER(p.category) LIKE ? ESCAPE '\\' OR LOWER(p.description) LIKE ? ESCAPE '\\')")
+                args.extend([esc, esc, esc])
+            sql += " AND (" + " OR ".join(like_clauses) + ")"
+
+        sql += " ORDER BY p.stock DESC, p.price_cents ASC LIMIT 5"
+
+        with connect() as db:
+            rows = [serialize_product(r, db) for r in db.execute(sql, args).fetchall()]
+
+        if not rows:
+            return {
+                "reply": "Não encontrei peças disponíveis com essa descrição. Tente informar o nome da peça e o modelo da moto.",
+                "products": []
+            }
+
+        resumo = ", ".join(f"{r['name']} (R$ {r['price_cents']/100:.2f} - {r['stock']} un.)" for r in rows[:3])
+        alvo = f" para {matched_bike['name']}" if matched_bike else ""
+        return {
+            "reply": f"Encontrei {len(rows)} opção(ões){alvo}: {resumo}.",
+            "products": rows
+        }
 
     @app.get("/", include_in_schema=False)
     def home():
